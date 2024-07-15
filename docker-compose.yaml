@@ -1,0 +1,38 @@
+services:
+  db:
+    image: mysql:8.0.33
+    container_name: creditcard_mysql_1
+    environment:
+      MYSQL_DATABASE: creditcard
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: 123456
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./creditcard_mysql_data:/var/lib/mysql
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+ 
+  django:
+    image: longchauthien03/creditcard-web:v3.0
+    container_name: creditcard_django_1
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+          condition: service_healthy
+    environment:
+      DATABASE_NAME: creditcard
+      DATABASE_USER: admin
+      DATABASE_PASSWORD: 123456
+      DATABASE_HOST: db
+      DATABASE_PORT: 3306
+
+volumes:
+  creditcard_mysql_data:
